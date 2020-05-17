@@ -46,30 +46,45 @@ router.post('/addPlanMessage', (req, res) => {
             
         })
 })
-// [{major: '软件工程', courseList: ['dskf', '12354']}]
+
+// 获取方案信息
 router.get('/getPlanMessage', (req, res) => {
     Plan.find()
+        .populate('course_id', 'name')
         .select('-_id')
-        then(data => {
+        .then(data => {
             let planList = [];
-            for(let item of data) {
-                if(isExist(item)) {
-                    for(let value of planList) {
-                        if(value.major === item.major) {
-                            value.courseList.push(item.course_id)
-                        }
-                    }
-                }
-            }
+            let major = '';
+            let length = -1;
+            data.forEach((item)=> {
+                if(item.major !== major) {
+                    major = item.major;
+                    planList.push({});
+                    length++;
 
-            function isExist(item) {
-                for(let value of planList) {
-                    if(value.major === item.major) {
-                        return true;
-                    }
+                    planList[length].major = major;
+                    planList[length].courseList = item.course_id.name;
+                }else {
+                    planList[length].courseList = planList[length].courseList+ item.course_id.name;
                 }
-                return false;
-            }
+            })
+
+            return res.json({
+                code: '0000',
+                msg: '获取方案信息成功',
+                data: planList
+            })
+        })
+})
+
+// 删除方案
+router.post('/deletePlan', (req, res) => {
+    Plan.deleteMany({major: req.body.major})
+        .then(()=> {
+            return res.json({
+                code: '0000',
+                msg: '删除方案成功'
+            })
         })
 })
 
