@@ -65,7 +65,7 @@ router.get('/getPlanMessage', (req, res) => {
                     planList[length].major = major;
                     planList[length].courseList = item.course_id.name;
                 }else {
-                    planList[length].courseList = planList[length].courseList+ item.course_id.name;
+                    planList[length].courseList = planList[length].courseList+'， '+ item.course_id.name;
                 }
             })
 
@@ -85,6 +85,28 @@ router.post('/deletePlan', (req, res) => {
                 code: '0000',
                 msg: '删除方案成功'
             })
+        })
+})
+
+// 修改方案
+router.post('/modifyPlan', (req, res)=> {
+    Plan.deleteMany({major: req.body.major})
+        .then(()=> {
+            let array = [];
+            req.body.courseList.forEach(item=> {
+                let result = Plan.create({
+                    major: req.body.major,
+                    course_id: item._id
+                })
+                array.push(result);
+            })
+            Promise.all(array)
+                    .then(values=> {
+                        return res.json({
+                            code: '0000',
+                            msg: '修改方案成功'
+                        })
+                    })
         })
 })
 
