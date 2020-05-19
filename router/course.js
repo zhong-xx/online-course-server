@@ -3,6 +3,7 @@ const router = express.Router();
 
 const Course = require('../model/Course.js');
 const StudentCourse = require('../model/StudentCourse.js');
+const Plan = require('../model/Plan.js');
 
 router.get('/getCoursesMessage', (req, res) => {
     Course.find()
@@ -81,10 +82,13 @@ router.post('/deleteCourse', (req, res) => {
             .then(()=> {
                 StudentCourse.deleteMany({course_id: req.body.courseId})
                             .then(() => {
-                                return res.json({
-                                    code: '0000',
-                                    msg: '删除课程成功'
-                                })
+                                Plan.deleteMany({course_id: req.body.courseId})
+                                    .then(()=> {
+                                        return res.json({
+                                            code: '0000',
+                                            msg: '删除课程成功'
+                                        })
+                                    })
                             })
             })
 })
