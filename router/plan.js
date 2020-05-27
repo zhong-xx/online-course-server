@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Plan = require('../model/Plan.js');
 const Course = require('../model/Course.js');
+const Student = require('../model/Student.js');
 
 router.get('/getCourseList', (req, res)=> {
     Course.find()
@@ -28,15 +29,15 @@ router.post('/addPlanMessage', (req, res) => {
                     msg: '该专业已设定选课方案'
                 })
             }
-            let array = [];
+            let myArray = [];
             req.body.courseList.forEach(item=> {
                 let result = Plan.create({
                     major: req.body.major,
                     course_id: item._id
                 })
-                array.push(result);
+                myArray.push(result);
             })
-            Promise.all(array)
+            Promise.all(myArray)
                     .then(values=> {
                         return res.json({
                             code: '0000',
@@ -77,6 +78,30 @@ router.get('/getPlanMessage', (req, res) => {
         })
 })
 
+// 获取专业方案
+router.get('/getMajorPlan', (req, res)=> {
+    Student.findOne({_id: req.query.id})
+            .then(data=> {
+                Plan.find({major: data.major})
+                    .populate('course_id', 'name')
+                    .then(data=> {
+                        let result = '';
+                        data.forEach((item)=> {
+                           if(result) {
+                                result = result + '，' + item.course_id.name;
+                           }else {
+                                result = result + item.course_id.name;
+                           }
+                        })
+                        return res.json({
+                            code: '0000',
+                            msg: '获取专业方案信息成功',
+                            data: result
+                        })
+                    })
+            })
+})
+
 // 删除方案
 router.post('/deletePlan', (req, res) => {
     Plan.deleteMany({major: req.body.major})
@@ -92,15 +117,15 @@ router.post('/deletePlan', (req, res) => {
 router.post('/modifyPlan', (req, res)=> {
     Plan.deleteMany({major: req.body.major})
         .then(()=> {
-            let array = [];
+            let myArray = [];
             req.body.courseList.forEach(item=> {
                 let result = Plan.create({
                     major: req.body.major,
                     course_id: item._id
                 })
-                array.push(result);
+                myArray.push(result);
             })
-            Promise.all(array)
+            Promise.all(myArray)
                     .then(values=> {
                         return res.json({
                             code: '0000',
